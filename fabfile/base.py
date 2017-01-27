@@ -31,9 +31,9 @@ class Base(Task):
         Run Base task
         """
 
-        # Housekeeping
-        run('apt-get clean')
-        run('apt-get update')
+        Housekeeping
+        sudo('apt-get clean')
+        sudo('apt-get update')
 
         tools.apt_get_install(self.APT_DEBS)
 
@@ -44,4 +44,3 @@ class Base(Task):
             git.fetch_clean_repo(env.REPO_URL)
 
         execute(nginx.Nginx())
-BASE = Base()

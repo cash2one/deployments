@@ -3,7 +3,7 @@ This module contains all the tasks to get a new or exisiting
 server up and running
 """
 
-from fabric.api import cd, env, puts, run
+from fabric.api import cd, env, puts, run, sudo
 from fabric.colors import green, red, yellow
 
 from fabfile import git
@@ -21,7 +21,7 @@ def apt_get_install(debs):
     multiple packages in the @debs list.
     """
     puts(yellow('Starting installation of prerequisite packages'))
-    run('apt-get --assume-yes install {}'.format(' '.join(debs)))
+    sudo('apt-get --assume-yes install {}'.format(' '.join(debs)))
 
 
 def set_shell_to_zsh():
@@ -29,7 +29,7 @@ def set_shell_to_zsh():
     Set the default shell to zsh
     """
     puts(yellow('Installing OhMyZsh theme and setting zsh to default shell'))
-    run('curl -L http://install.ohmyz.sh | sh')
+    sudo('curl -L http://install.ohmyz.sh | sh')
 
 
 def prep_gulp(repo_path, npm_debs):
@@ -39,10 +39,10 @@ def prep_gulp(repo_path, npm_debs):
     """
     puts(green('Installing gulp and its dependencies using npm(node package manager)'))
     with cd(repo_path):
-        run('npm install {}'.format(' '.join(npm_debs)))
-        run('npm install -g bower gulp')
-        run('bower install bourbon --allow-root')
-        run("gulp production")
+        sudo('npm install {}'.format(' '.join(npm_debs)))
+        sudo('npm install -g bower gulp')
+        sudo('bower install bourbon --allow-root')
+        sudo("gulp production")
 
 
 def prep_requirements(requirements_file_path):
@@ -50,7 +50,7 @@ def prep_requirements(requirements_file_path):
     Install all required pip dependencies on server
     """
     puts(yellow('Installing python package dependencies'))
-    run('pip install -r {}'.format(requirements_file_path))
+    sudo('pip install -r {}'.format(requirements_file_path))
 
 
 def create_directory(path):
@@ -58,7 +58,7 @@ def create_directory(path):
     Create directory. If the path doesn't exist, will create it.
     """
     puts(green('Creating website home directory'))
-    run('mkdir -p {}'.format(path))
+    sudo('mkdir -p {}'.format(path))
 
 
 def install_letsencrypt():
@@ -67,15 +67,15 @@ def install_letsencrypt():
     """
     puts(red('Starting Installation of letsencrypt to enable HTTPs and SSL on Nginx'))
     with cd('/var'):
-        run('rm -rf letsencrypt')
+        sudo('rm -rf letsencrypt')
         git.fetch_clean_repo(LETSENCRYPT_DOWNLOAD)
 
     with cd(LETSENCRYPT_DIR):
-        run('chgrp www-data /usr/share/nginx/html/')
-        run('./letsencrypt-auto certonly -a webroot --webroot-path=/usr/share/nginx/html {}'.format(domains))
+        sudo('chgrp www-data /usr/share/nginx/html/')
+        sudo('./letsencrypt-auto certonly -a webroot --webroot-path=/usr/share/nginx/html {}'.format(domains))
 
         # Generate a 2048-bit cert
-        run('openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048')
+        sudo('openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048')
 
 
 def sed_replace(regex, replacement, file_path):
@@ -83,4 +83,4 @@ def sed_replace(regex, replacement, file_path):
     Replace all instances of @regex with @replacement in the given @file_path.
     """
     puts(yellow('Replacing all instances of {} with {} in {}'.format(regex, replacement, file_path)))
-    run('sed -i \'s/{}/{}/g\' {}'.format(regex, replacement, file_path))
+    sudo('sed -i \'s/{}/{}/g\' {}'.format(regex, replacement, file_path))

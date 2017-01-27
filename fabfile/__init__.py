@@ -1,6 +1,5 @@
 from . import cfg
 
-import wordpress
+import base
 
-wordpress_deploy = wordpress.Deploy()
-install_theme = wordpress.InstallTheme()
+deploy = base.Base()

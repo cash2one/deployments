@@ -3,7 +3,7 @@ Task to Configure Nginx on server
 """
 from os.path import join, sep
 
-from fabric.api import env, puts, run
+from fabric.api import env, puts, run, sudo
 from fabric.colors import green, red, yellow
 from fabric.contrib.files import exists
 from fabric.tasks import Task
@@ -35,34 +35,34 @@ class Nginx(Task):
             puts(green('Cert file doesn\'t exist. Creating one.'))
 
             puts(yellow('Installing insecure intermediate Nginx config'))
-            run('cp {} {}'.format(self.insecure_nginx_config, join(self.nginx_dir, 'nginx.conf')))
+            sudo('cp {} {}'.format(self.insecure_nginx_config, join(self.nginx_dir, 'nginx.conf')))
 
             # Replace INSERT_HOST_HERE instaces with host name
             tools.sed_replace('INSERT_HOST_HERE', ' '.join(env.DOMAINS), join(self.nginx_dir, 'nginx.conf'))
 
-            run('service nginx restart')
+            sudo('service nginx restart')
 
             # Does a lot. Installs SSL certs with Let's Encrypt and reconfigures Nginx.
             puts(yellow('Starting Let\'s Encrypt install.'))
             tools.install_letsencrypt()
 
             puts(yellow('Copying cron to refresh certificate.'))
-            run('cp {} {}'.format(self.cron_file, self.cron_config_path))
+            sudo('cp {} {}'.format(self.cron_file, self.cron_config_path))
 
         else:
             # Print out expiration date of SSL Certificates
             puts(red('Certificate exists: skipping certificate creation'))
-            run('echo | openssl s_client -connect {}:443 2>/dev/null | openssl x509'
+            sudo('echo | openssl s_client -connect {}:443 2>/dev/null | openssl x509'
                 ' -in {} -noout -dates'.format(env.host, cert_file))
 
         # Upload real Nginx configs
         puts(yellow('Installing secure Nginx configs.'))
-        run('cp {} {}'.format(self.special_nginx_configs, self.nginx_dir))
-        run('cp {} {}'.format(self.ssl_config, self.nginx_dir))
-        run('cp {} {}'.format(self.secure_nginx_config, self.nginx_dir))
+        sudo('cp {} {}'.format(self.special_nginx_configs, self.nginx_dir))
+        sudo('cp {} {}'.format(self.ssl_config, self.nginx_dir))
+        sudo('cp {} {}'.format(self.secure_nginx_config, self.nginx_dir))
 
         # Replace INSERT_HOST_HERE instances with host name
         tools.sed_replace('INSERT_HOST_HERE', env.host, join(self.nginx_dir, 'nginx.conf'))
         tools.sed_replace('INSERT_HOST_HERE', env.host, join(self.nginx_dir, 'ssl.conf'))
 
-        run('service nginx restart')
+        sudo('service nginx restart')
