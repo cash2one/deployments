@@ -15,7 +15,9 @@ class Base(Task):
     """
     Base Task to install basic server requirements
     """
-    name = "prep_server"
+    name = "prep_server" # Name of the class
+
+    # defining a constant
     APT_DEBS = (
         'git-core',
         'gzip',
@@ -26,12 +28,12 @@ class Base(Task):
         'zsh',
     )
 
-    def run(self, git_branch='master'):
+    def run(self):
         """
         Run Base task
         """
 
-        Housekeeping
+        # Housekeeping
         sudo('apt-get clean')
         sudo('apt-get update')
 
